@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
     <application
         android:label="pomodoro_prototype"
         android:name="${applicationName}"
@@ -19,6 +22,10 @@
             <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
+              />
+            <meta-data
+              android:name="com.google.firebase.messaging.default_notification_icon"
+              android:resource="@drawable/app_icon" 
               />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -42,4 +49,6 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
+        <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
 </manifest>

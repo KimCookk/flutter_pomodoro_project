@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pomodoro_prototype/model/timer_type_helper.dart';
+import 'package:pomodoro_prototype/view/focus_time_rating_dialog.dart';
 import '../viewmodel/pomodoro_view_model.dart';
 import '../model/pomodoro_model.dart';
 
@@ -13,10 +14,29 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isTabVisible = ref.watch(tabVisibilityProvider);
     final timerState = ref.watch(pomodoroTimerProvider);
+    final pomodoroViewState = ref.watch(pomodoroViewStateProvider);
+
+    if (pomodoroViewState.isFeedbackDialogVisible) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return FocusTimeRatingDialog();
+            }); // 다이얼로그 호출
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pomodoro Timer'),
+        leading: IconButton(
+          icon: Icon(Icons.message_sharp),
+          onPressed: () => showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return FocusTimeRatingDialog();
+              }),
+        ),
         actions: [
           IconButton(
             icon: Icon(isTabVisible ? Icons.visibility_off : Icons.visibility),
@@ -150,5 +170,3 @@ class TabNavigationBar extends StatelessWidget {
     );
   }
 }
-
-final tabVisibilityProvider = StateProvider<bool>((ref) => true);

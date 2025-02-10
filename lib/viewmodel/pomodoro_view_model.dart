@@ -1,6 +1,7 @@
 import 'dart:async';
-import 'dart:ffi';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pomodoro_prototype/main.dart';
 import '../model/pomodoro_model.dart';
 
 final pomodoroSettingsProvider =
@@ -13,6 +14,13 @@ final pomodoroTimerProvider =
   (ref) => PomodoroTimerNotifier(ref),
 );
 
+final pomodoroViewStateProvider =
+    StateNotifierProvider<PomodoroViewStateNotifier, PomodoroViewState>(
+  (ref) => PomodoroViewStateNotifier(),
+);
+
+final tabVisibilityProvider = StateProvider<bool>((ref) => true);
+
 class PomodoroSettingsNotifier extends StateNotifier<PomodoroSettings> {
   PomodoroSettingsNotifier() : super(PomodoroSettings());
 
@@ -24,6 +32,18 @@ class PomodoroSettingsNotifier extends StateNotifier<PomodoroSettings> {
       longBreak: longBreak,
       rounds: rounds,
     );
+  }
+}
+
+class PomodoroViewStateNotifier extends StateNotifier<PomodoroViewState> {
+  PomodoroViewStateNotifier() : super(PomodoroViewState());
+
+  void showFeedbackDialog() {
+    state = state.copyWith(isFeedbackDialogVisible: true);
+  }
+
+  void hideFeedbackDialog() {
+    state = state.copyWith(isFeedbackDialogVisible: false);
   }
 }
 
@@ -51,6 +71,7 @@ class PomodoroTimerNotifier extends StateNotifier<PomodoroTimerState> {
         state = state.copyWith(remainingSeconds: _remainingSeconds);
       } else {
         timer.cancel();
+        showTimerFinishedNotification(state.timerType.name);
         _nextSession();
       }
     });
@@ -78,11 +99,13 @@ class PomodoroTimerNotifier extends StateNotifier<PomodoroTimerState> {
       if (_currentRound < settings.rounds) {
         _remainingSeconds = settings.shortBreak;
         _isFocusSession = false;
+
         state = state.copyWith(
           timerType: TimerType.shortBreak,
           timerStatus: TimerStatus.paused,
           remainingSeconds: _remainingSeconds,
         );
+        ref.read(pomodoroViewStateProvider.notifier).showFeedbackDialog();
       } else {
         _remainingSeconds = settings.longBreak;
         _currentRound = 1;
@@ -125,5 +148,28 @@ class PomodoroTimerNotifier extends StateNotifier<PomodoroTimerState> {
           return settings.longBreak;
         }
     }
+  }
+
+  Future<void> showTimerFinishedNotification(String timerType) async {
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+      'pomodoro_timer_channel',
+      'Pomodoro Timer',
+      channelDescription: 'Notifications for Pomodoro Timer events',
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: false,
+    );
+
+    const NotificationDetails platformDetails =
+        NotificationDetails(android: androidDetails);
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      'Timer Completed',
+      'Your $timerType session has ended. Time for a break!',
+      platformDetails,
+      payload: 'timer_finished',
+    );
   }
 }

@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 enum TimerType { focus, shortBreak, longBreak }
 
 enum TimerStatus { processing, stopped, paused }
@@ -43,9 +41,22 @@ class PomodoroSettings {
   final int rounds;
 
   PomodoroSettings({
-    this.focusTime = 25,
-    this.shortBreak = 5,
-    this.longBreak = 15,
-    this.rounds = 4,
+    this.focusTime = 3,
+    this.shortBreak = 3,
+    this.longBreak = 5,
+    this.rounds = 2,
   });
+}
+
+class PomodoroViewState {
+  final bool isFeedbackDialogVisible;
+
+  PomodoroViewState({this.isFeedbackDialogVisible = false});
+
+  PomodoroViewState copyWith({bool? isFeedbackDialogVisible}) {
+    return PomodoroViewState(
+      isFeedbackDialogVisible:
+          isFeedbackDialogVisible ?? this.isFeedbackDialogVisible,
+    );
+  }
 }
